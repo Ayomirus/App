@@ -1,0 +1,270 @@
+
+:root {
+  --primary: #4a90e2;
+  --success: #28a745;
+  --danger: #dc3545;
+  --dark: #2c3e50;
+  --light: #f8f9fa;
+  --shadow: 0 2px 15px rgba(0,0,0,0.1);
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  min-height: 100vh;
+  padding: 2rem;
+  margin: 0;
+  color: var(--dark);
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  background: white;
+  padding: 2rem;
+  border-radius: 15px;
+  box-shadow: var(--shadow);
+}
+
+h1 {
+  color: var(--primary);
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.datetime-display {
+  text-align: center;
+  font-size: 1.2rem;
+  color: var(--dark);
+  margin-bottom: 2rem;
+  font-weight: 500;
+}
+
+h2 {
+  color: var(--dark);
+  font-size: 1.8rem;
+  margin: 2rem 0 1rem;
+  border-bottom: 2px solid var(--primary);
+  padding-bottom: 0.5rem;
+}
+
+select, textarea, input[type="datetime-local"] {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  border: 2px solid #e1e1e1;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+select:focus, textarea:focus, input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+}
+
+textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+button {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  width: auto;
+  margin: 1rem 0;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.delete-btn {
+  background: var(--danger);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  padding: 0;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notification {
+  padding: 1rem;
+  border-radius: 8px;
+  font-weight: 500;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from { transform: translateY(-100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.advice {
+  background: #f8f9fa;
+  border-left: 4px solid var(--primary);
+  padding: 1rem;
+  margin: 1rem 0;
+  border-radius: 0 8px 8px 0;
+  font-style: italic;
+  color: #666;
+  transition: all 0.3s ease;
+}
+
+.advice:hover {
+  background: #fff;
+  transform: translateX(5px);
+}
+
+#moodList {
+  display: grid;
+  gap: 1rem;
+  padding: 0;
+}
+
+#moodList li {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  transition: transform 0.2s;
+  position: relative;
+}
+
+#moodList li:hover {
+  transform: translateY(-2px);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin: 2rem 0;
+}
+
+canvas {
+  margin: 2rem 0;
+  max-width: 100%;
+  background: white;
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: var(--shadow);
+}
+
+.export-btn {
+  background: var(--dark);
+  margin-top: 2rem;
+}
+
+@media (max-width: 768px) {
+  body {
+    padding: 0.5rem;
+  }
+  
+  .container {
+    padding: 1rem;
+    margin: 0;
+    border-radius: 8px;
+  }
+  
+  h1 {
+    font-size: 1.8rem;
+  }
+
+  .datetime-display {
+    font-size: 1rem;
+  }
+
+  select, textarea, button {
+    font-size: 16px; /* Prevents iOS zoom on focus */
+    margin: 0.5rem 0;
+  }
+
+  textarea {
+    min-height: 80px;
+  }
+
+  #moodList li {
+    padding: 1rem;
+  }
+
+  .advice {
+    font-size: 0.9rem;
+    padding: 0.75rem;
+  }
+
+  canvas {
+    height: 200px !important;
+    padding: 0.5rem;
+  }
+
+  .delete-btn {
+    width: 25px;
+    height: 25px;
+    font-size: 1rem;
+  }
+}
+
+/* Backup controls */
+.backup-controls {
+    margin-top: 2rem;
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.backup-btn, .restore-btn {
+    background: var(--dark);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.backup-btn:hover, .restore-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+#restoreFile {
+    display: none;
+}
+
+/* Accessibility improvements */
+*:focus {
+    outline: 3px solid var(--primary);
+    outline-offset: 2px;
+}
+
+/* Additional small screen optimizations */
+@media (max-width: 480px) {
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  h2 {
+    font-size: 1.3rem;
+  }
+
+  .container {
+    padding: 0.75rem;
+  }
+
+  canvas {
+    height: 180px !important;
+  }
