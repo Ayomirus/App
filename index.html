@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="permissions-policy" content="accelerometer=*, gyroscope=*, magnetometer=*, ambient-light-sensor=*">
+    <title>Mood Tracker</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <div id="notification" class="notification"></div>
+</head>
+<body>
+    <div class="container">
+        <h1>🌈 Mood Tracker</h1>
+    
+    <div id="currentDateTime" class="datetime-display"></div>
+    
+    <label for="mood">Select your mood:</label>
+    <select id="mood">
+        <option value="😊 Happy">😊 Happy</option>
+        <option value="😢 Sad">😢 Sad</option>
+        <option value="😡 Angry">😡 Angry</option>
+        <option value="😌 Relaxed">😌 Relaxed</option>
+        <option value="😴 Tired">😴 Tired</option>
+    </select>
+    
+    <textarea id="moodNote" placeholder="Write a short note..."></textarea>
+    
+    <button onclick="saveMood()">Log Mood</button>
+    
+    <h2>Previous Moods</h2>
+    <ul id="moodList"></ul>
+    
+    <h2>Mood Trends</h2>
+    <canvas id="moodChart" width="400" height="200"></canvas>
+    
+    <button onclick="exportData()" class="export-btn" aria-label="Export data as CSV">Export Data</button>
+    
+    <div class="backup-controls">
+        <button onclick="backupData()" class="backup-btn" aria-label="Create backup">Backup Data</button>
+        <input type="file" id="restoreFile" accept=".json" onchange="restoreData(this.files[0])" aria-label="Restore from backup" />
+        <label for="restoreFile" class="restore-btn">Restore Backup</label>
+    </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
