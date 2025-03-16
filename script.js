@@ -1,4 +1,3 @@
-
 // Mood advice messages
 const moodAdvice = {
     "😊 Happy": [
@@ -31,15 +30,15 @@ const moodAdvice = {
 // Function to get random advice based on mood
 function getRandomAdvice(mood) {
     const adviceList = moodAdvice[mood];
-    const randomIndex = Math.floor(Math.random() * adviceList.length);
-    return adviceList[randomIndex];
+    if (!adviceList) return "Stay mindful and take care of yourself!";
+    return adviceList[Math.floor(Math.random() * adviceList.length)];
 }
-
-
 
 // Show notification function
 function showNotification(message, type = 'success') {
     const notification = document.getElementById('notification');
+    if (!notification) return;
+    
     notification.textContent = message;
     notification.className = `notification ${type}`;
     notification.style.display = 'block';
@@ -50,12 +49,8 @@ function showNotification(message, type = 'success') {
 }
 
 // Function to validate mood data
-function validateMoodData(date, mood, note) {
-    if (!date || !(date instanceof Date) || isNaN(date)) {
-        showNotification('Invalid date', 'error');
-        return false;
-    }
-    if (!mood || !Object.keys(moodAdvice).includes(mood)) {
+function validateMoodData(mood, note) {
+    if (!mood || !moodAdvice[mood]) {
         showNotification('Please select a valid mood', 'error');
         return false;
     }
@@ -66,25 +61,22 @@ function validateMoodData(date, mood, note) {
     return true;
 }
 
-// Function to save mood with date and note
+// Function to save mood
 function saveMood() {
     try {
         const mood = document.getElementById("mood").value;
         const note = document.getElementById("moodNote").value;
         const date = new Date().toISOString();
 
-        if (!validateMoodData(date, mood, note)) {
-            return;
-        }
+        if (!validateMoodData(mood, note)) return;
 
         let moodList = JSON.parse(localStorage.getItem("moods")) || [];
         const advice = getRandomAdvice(mood);
         moodList.push({ date, mood, note, advice });
         localStorage.setItem("moods", JSON.stringify(moodList));
 
-        // Clear inputs
         document.getElementById("moodNote").value = "";
-        
+
         showNotification(advice);
         displayMoods();
         displayMoodChart();
@@ -120,13 +112,12 @@ function exportData() {
         
         let csv = "Date,Mood,Note\n";
         moodList.forEach(entry => {
-            csv += `${entry.date},${entry.mood},"${entry.note}"\n`;
+            csv += `${entry.date},${entry.mood},"${entry.note || ""}"\n`;
         });
         
         const blob = new Blob([csv], { type: 'text/csv' });
-        const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = url;
+        a.href = URL.createObjectURL(blob);
         a.download = 'mood_tracker_data.csv';
         a.click();
         showNotification('Data exported successfully!');
@@ -138,198 +129,54 @@ function exportData() {
 
 // Function to display stored moods
 function displayMoods() {
-    try {
-        let moodList = JSON.parse(localStorage.getItem("moods")) || [];
-        let listElement = document.getElementById("moodList");
-        listElement.innerHTML = "";
+    const moodList = JSON.parse(localStorage.getItem("moods")) || [];
+    const listElement = document.getElementById("moodList");
+    if (!listElement) return;
 
-        if (moodList.length === 0) {
-            listElement.innerHTML = '<li class="empty-state">No moods logged yet</li>';
-            return;
-        }
-
-        moodList.forEach((entry, index) => {
-            let listItem = document.createElement("li");
-            let date = new Date(entry.date).toLocaleString();
-            listItem.innerHTML = `
-                ${date}: ${entry.mood} - ${entry.note || "No note"}
+    listElement.innerHTML = moodList.length
+        ? moodList.map((entry, index) => `
+            <li>
+                ${new Date(entry.date).toLocaleString()}: ${entry.mood} - ${entry.note || "No note"}
                 <div class="advice">${entry.advice || getRandomAdvice(entry.mood)}</div>
-                <button onclick="deleteMood(${index})" class="delete-btn" aria-label="Delete entry">×</button>
-            `;
-            listElement.appendChild(listItem);
-        });
-    } catch (error) {
-        console.error('Error displaying moods:', error);
-        showNotification('Failed to display moods', 'error');
-    }
+                <button onclick="deleteMood(${index})" class="delete-btn">×</button>
+            </li>
+        `).join('')
+        : '<li class="empty-state">No moods logged yet</li>';
 }
 
 // Function to display mood trends chart
 function displayMoodChart() {
-    try {
-        let moodList = JSON.parse(localStorage.getItem("moods")) || [];
-        let moodData = {};
-        
-        if (moodList.length === 0) {
-            document.getElementById("moodChart").style.display = 'none';
-            return;
+    const moodList = JSON.parse(localStorage.getItem("moods")) || [];
+    if (!moodList.length) return document.getElementById("moodChart").style.display = 'none';
+
+    document.getElementById("moodChart").style.display = 'block';
+    const ctx = document.getElementById("moodChart").getContext("2d");
+    const moodCounts = moodList.reduce((acc, entry) => {
+        acc[entry.mood] = (acc[entry.mood] || 0) + 1;
+        return acc;
+    }, {});
+
+    if (window.moodChart) window.moodChart.destroy();
+
+    window.moodChart = new Chart(ctx, {
+        type: "bar",
+        data: {
+            labels: Object.keys(moodCounts),
+            datasets: [{
+                label: 'Mood Frequency',
+                data: Object.values(moodCounts),
+                backgroundColor: 'rgba(75, 192, 192, 0.6)',
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: { y: { beginAtZero: true, stepSize: 1 } },
         }
-        
-        document.getElementById("moodChart").style.display = 'block';
-        
-        // Group by days
-        moodList.forEach(entry => {
-            let date = new Date(entry.date).toLocaleDateString();
-            if (!moodData[date]) {
-                moodData[date] = {};
-            }
-            moodData[date][entry.mood] = (moodData[date][entry.mood] || 0) + 1;
-        });
-
-        let ctx = document.getElementById("moodChart").getContext("2d");
-        if (window.moodChart && typeof window.moodChart.destroy === 'function') {
-            window.moodChart.destroy();
-        }
-
-        let datasets = Object.keys(moodList.reduce((acc, entry) => {
-            acc[entry.mood] = true;
-            return acc;
-        }, {})).map((mood, index) => ({
-            label: mood,
-            data: Object.keys(moodData).map(date => moodData[date][mood] || 0),
-            backgroundColor: [`hsl(${index * 360 / 5}, 70%, 50%)`],
-        }));
-
-        window.moodChart = new Chart(ctx, {
-            type: "bar",
-            data: {
-                labels: Object.keys(moodData),
-                datasets: datasets
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            stepSize: 1
-                        }
-                    }
-                },
-                plugins: {
-                    title: {
-                        display: true,
-                        text: 'Mood Trends Over Time'
-                    }
-                }
-            }
-        });
-    } catch (error) {
-        console.error('Error displaying chart:', error);
-        showNotification('Failed to display chart', 'error');
-    }
-}
-
-// Update current time display
-function updateDateTime() {
-    const dateTimeElement = document.getElementById("currentDateTime");
-    const now = new Date();
-    dateTimeElement.textContent = now.toLocaleString();
-}
-
-// Device sensor monitoring
-async function initSensors() {
-    try {
-        // Step counter
-        if ('stepCounter' in navigator.sensors) {
-            const stepCounter = await navigator.sensors.stepCounter.start();
-            stepCounter.onreading = () => {
-                if (stepCounter.steps > 10000) {
-                    showNotification("Great job! You've reached 10,000 steps today!", 'success');
-                }
-            };
-        }
-
-        // Motion sensors
-        if ('Accelerometer' in window) {
-            const accelerometer = new Accelerometer({frequency: 1});
-            accelerometer.addEventListener('reading', () => {
-                const activity = Math.abs(accelerometer.x) + Math.abs(accelerometer.y) + Math.abs(accelerometer.z);
-                if (activity > 20) {
-                    showNotification("You seem very active! How are you feeling?", 'info');
-                }
-            });
-            accelerometer.start();
-        }
-    } catch (error) {
-        console.log('Sensor access not available:', error);
-    }
-}
-
-// Request notification permission
-async function requestNotificationPermission() {
-    if ('Notification' in window) {
-        const permission = await Notification.requestPermission();
-        if (permission === 'granted') {
-            showNotification('Notifications enabled!', 'success');
-        }
-    }
+    });
 }
 
 // Initialize the app
-function initApp() {
-    // Start updating time display
-    updateDateTime();
-    setInterval(updateDateTime, 1000);
-    
-    // Display moods and chart
+document.addEventListener('DOMContentLoaded', () => {
     displayMoods();
     displayMoodChart();
-
-    // Initialize sensors and notifications
-    initSensors();
-    requestNotificationPermission();
-}
-
-// Backup data to file
-function backupData() {
-    try {
-        const data = localStorage.getItem("moods");
-        const blob = new Blob([data], { type: 'application/json' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `mood_tracker_backup_${new Date().toISOString().split('T')[0]}.json`;
-        a.click();
-        showNotification('Backup created successfully!');
-    } catch (error) {
-        showNotification('Failed to create backup', 'error');
-    }
-}
-
-// Restore data from backup
-function restoreData(file) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        try {
-            const data = JSON.parse(e.target.result);
-            localStorage.setItem("moods", JSON.stringify(data));
-            showNotification('Data restored successfully!');
-            displayMoods();
-            displayMoodChart();
-        } catch (error) {
-            showNotification('Invalid backup file', 'error');
-        }
-    };
-    reader.readAsText(file);
-}
-
-// Register service worker for offline support
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js')
-        .then(() => console.log('Service Worker registered'))
-        .catch(error => console.log('Service Worker registration failed:', error));
-}
-
-// Start the app when the page loads
-document.addEventListener('DOMContentLoaded', initApp);
+});
